@@ -75,7 +75,7 @@
   body {
     max-width: 900px;
     margin: 0 auto;
-    padding: 2rem 1.5rem 4rem;
+    padding: 1rem 1.5rem 2rem;
     min-height: 100vh;
   }
 
@@ -98,8 +98,8 @@
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    margin-bottom: 2.5rem;
-    padding-bottom: 1.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
     border-bottom: 0.5px solid var(--border2);
   }
 
@@ -139,8 +139,7 @@
   .config-panel {
     display: flex;
     gap: 12px;
-    margin-bottom: 2rem;
-    align-items: stretch;
+    margin-bottom: 0.75rem;
     flex-wrap: wrap;
   }
 
@@ -148,12 +147,13 @@
     background: var(--bg2);
     border: 0.5px solid var(--border2);
     border-radius: 12px;
-    padding: 10px 14px;
+    padding: 8px 12px;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 5px;
     width: fit-content;
-    min-width: 320px;
+    min-width: 0;
+    flex: 1;
   }
   .bankroll-top {
     display: flex;
@@ -177,7 +177,7 @@
   }
   .stake-now-val {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 18px;
+    font-size: 15px;
     font-weight: 700;
     color: var(--amber);
   }
@@ -193,17 +193,17 @@
 
   .bankroll-input-wrap .sym {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 30px;
+    font-size: 22px;
     color: var(--muted);
   }
 
   .bankroll-input-wrap input {
-    width: 200px;
+    width: 130px;
     background: transparent;
     border: none;
     outline: none;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 32px;
+    font-size: 24px;
     font-weight: 700;
     color: var(--text);
     min-width: 0;
@@ -219,15 +219,16 @@
     border: 0.5px solid var(--border2);
     border-radius: 12px;
     color: var(--muted);
-    font-size: 36px;
+    font-size: 26px;
     line-height: 1;
-    padding: 0 22px;
+    padding: 0 16px;
     cursor: pointer;
     transition: all 0.2s;
     align-self: stretch;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
   }
   .reset-btn.danger {
     background: var(--red-bg);
@@ -249,12 +250,9 @@
   /* Metrics grid */
   .metrics {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 10px;
-    margin-bottom: 2rem;
-  }
-
-  .metric {
+    margin-bottom: 0.5rem;
     background: var(--bg2);
     border: 0.5px solid var(--border);
     border-radius: 10px;
@@ -290,46 +288,46 @@
     font-weight: 700;
     letter-spacing: 0.03em;
     text-align: center;
-    margin-bottom: 1.5rem;
     display: none;
+    margin-bottom: 0;
   }
 
-  .alert.bust { background: var(--red-bg); color: var(--red); border: 0.5px solid var(--red-dim); display: block; }
-  .alert.win  { background: var(--green-bg); color: var(--green); border: 0.5px solid var(--green-dim); display: block; }
+  .alert.bust { background: var(--red-bg); color: var(--red); border: 0.5px solid var(--red-dim); display: block; margin-bottom: 0.5rem; }
+  .alert.win  { background: var(--green-bg); color: var(--green); border: 0.5px solid var(--green-dim); display: block; margin-bottom: 0.5rem; }
 
   /* Progress bar */
   .progress-label {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
   }
 
   .progress-label span {
-    font-size: 10px;
+    font-size: 13px;
     font-weight: 700;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--muted);
   }
 
   .progress-label .steps-txt {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
+    font-size: 15px;
+    font-weight: 700;
     color: var(--text);
   }
 
   .progress-track {
-    height: 4px;
+    height: 10px;
     background: var(--bg3);
-    border-radius: 2px;
-    margin-bottom: 2rem;
-    overflow: hidden;
+    border-radius: 5px;
+    margin-bottom: 0.75rem;
   }
 
   .progress-fill {
     height: 100%;
-    border-radius: 2px;
+    border-radius: 5px;
     background: var(--green);
     transition: width 0.5s cubic-bezier(.4,0,.2,1);
   }
@@ -370,7 +368,10 @@
   tbody tr:last-child { border-bottom: none; }
   tbody tr.current-row { background: rgba(74,222,128,0.04); }
   tbody tr.won-row { background: rgba(93,202,138,0.03); }
-  tbody tr.lost-row { background: rgba(232,93,93,0.03); }
+  tbody tr.lost-row { background: rgba(232,93,93,0.18); border-left: 3px solid var(--red); }
+  tbody tr.lost-row td { color: var(--red); }
+  tbody tr.lost-row .stake-val { color: var(--red); }
+  tbody tr.lost-row .profit-val { color: var(--red-dim); }
 
   tbody td {
     padding: 10px 8px;
@@ -381,7 +382,7 @@
   }
 
   tbody td:first-child { text-align: left; }
-  tbody td:last-child { text-align: center; }
+  tbody td:last-child { text-align: right; }
 
   .step-badge {
     display: inline-flex;
@@ -436,7 +437,49 @@
   .result-tag.win  { color: var(--green); }
   .result-tag.loss { color: var(--red); }
 
-  /* Footer */
+  /* Action bar above table */
+  .action-bar {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    border: 0.5px solid var(--border2);
+    border-radius: 12px;
+  }
+  .action-bar.visible { display: flex; }
+  .action-bar-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-right: 4px;
+    white-space: nowrap;
+  }
+  .btn-win-lg, .btn-loss-lg {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 10px 28px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 0.5px solid;
+    transition: all 0.15s;
+    flex: 1;
+    max-width: 180px;
+    text-align: center;
+  }
+  .btn-win-lg  { background: var(--green-bg); color: var(--green); border-color: var(--green-dim); }
+  .btn-win-lg:hover  { background: var(--green-dim); }
+  .btn-loss-lg { background: var(--red-bg); color: var(--red); border-color: var(--red-dim); }
+  .btn-loss-lg:hover { background: var(--red-dim); color: #fff; }
+
+  /* Hide result column header/cell when action bar is used */
+
+
   footer {
     margin-top: 2.5rem;
     padding-top: 1.5rem;
@@ -462,7 +505,7 @@
   }
 
   /* History section */
-  .history-section { margin-top: 2rem; }
+  .history-section { margin-top: 1rem; }
 
   .section-head {
     display: flex;
@@ -547,23 +590,23 @@
     background: var(--bg2);
     border: 0.5px solid var(--border2);
     border-radius: 12px;
-    padding: 16px 20px;
-    margin-bottom: 1.5rem;
+    padding: 10px 16px;
+    margin-bottom: 0.5rem;
   }
 
   .start-selector-head {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
   }
 
   .start-selector-head label {
-    font-size: 11px;
+    font-size: 16px;
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--muted);
+    color: var(--text);
   }
 
   .start-warning {
@@ -761,7 +804,7 @@
 
 <div class="start-selector">
   <div class="start-selector-head">
-    <label>Arrancar desde el paso</label>
+    <label>Staking</label>
     <span class="start-warning" id="startWarning"></span>
   </div>
   <div class="step-pills" id="stepPills"></div>
@@ -771,16 +814,8 @@
 
 <div class="metrics">
   <div class="metric">
-    <label>Bankroll</label>
-    <div class="metric-val" id="mBankroll">$20,000.00</div>
-  </div>
-  <div class="metric">
     <label>P&L Sesión</label>
     <div class="metric-val" id="mPnl">€0.00</div>
-  </div>
-  <div class="metric">
-    <label>Paso actual</label>
-    <div class="metric-val amber" id="mStep">1 / 7</div>
   </div>
   <div class="metric">
     <label>Ganancia si gana</label>
@@ -789,11 +824,16 @@
 </div>
 
 <div class="progress-label">
-  <span>Progreso secuencia</span>
+  <span>Secuencia</span>
   <span class="steps-txt" id="progressTxt">0 / 7</span>
 </div>
 <div class="progress-track">
   <div class="progress-fill" id="progressFill" style="width:0%"></div>
+</div>
+
+<div id="actionBar" class="action-bar">
+<button class="btn-win-lg" id="btnWin" onclick="">✓ Gana</button>
+  <button class="btn-loss-lg" id="btnLoss" onclick="">✗ Pierde</button>
 </div>
 
 <div class="table-wrap">
@@ -805,7 +845,6 @@
         <th>Stake</th>
         <th>Acum.</th>
         <th>Gana</th>
-        <th>Result.</th>
       </tr>
     </thead>
     <tbody id="tableBody"></tbody>
@@ -950,18 +989,15 @@ function render() {
 
     let actionHtml = '';
     if (isSkipped) {
-      actionHtml = `<span style="color:var(--muted);font-family:'Syne',sans-serif;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Omitido</span>`;
+      actionHtml = '';
     } else if (isCurrent) {
-      actionHtml = `<div class="action-btns">
-        <button class="btn btn-win" onclick="markResult(${i},'win')">✓ Gana</button>
-        <button class="btn btn-loss" onclick="markResult(${i},'loss')">✗ Pierde</button>
-      </div>`;
+      actionHtml = '';
     } else if (isWon) {
       actionHtml = `<span class="result-tag win">Ganado</span>`;
     } else if (isLost) {
       actionHtml = `<span class="result-tag loss">Perdido</span>`;
     } else {
-      actionHtml = `<span style="color:var(--muted);font-family:'Syne',sans-serif;font-size:11px;">—</span>`;
+      actionHtml = '';
     }
 
     tr.innerHTML = `
@@ -969,15 +1005,25 @@ function render() {
       <td>${RATIOS[i].toFixed(2)}%</td>
       <td class="stake-val">${Math.abs(stake).toLocaleString('es-ES', {minimumFractionDigits:2,maximumFractionDigits:2})}</td>
       <td>${fmt(fullCumul)}</td>
-      <td class="profit-val">${fmt(netProfit)}</td>
-      <td>${actionHtml}</td>
+      <td class="profit-val">${fmt(netProfit)}${actionHtml ? ' · ' + actionHtml : ''}</td>
     `;
     body.appendChild(tr);
   }
 
+  // Update action bar
+  const actionBar = document.getElementById('actionBar');
+  const btnWin = document.getElementById('btnWin');
+  const btnLoss = document.getElementById('btnLoss');
+  if (currentStep < TOTAL_STEPS) {
+    actionBar.classList.add('visible');
+    btnWin.onclick = () => markResult(currentStep, 'win');
+    btnLoss.onclick = () => markResult(currentStep, 'loss');
+  } else {
+    actionBar.classList.remove('visible');
+  }
+
   // Metrics
   const pnl = bankroll - startBankroll;
-  document.getElementById('mBankroll').textContent = fmt(bankroll);
   // Reset btn danger state while sequence is active
   const seqActive = results.some(r => r === 'win' || r === 'loss') || currentStep > startStep;
   document.querySelector('.reset-btn').classList.toggle('danger', seqActive);
@@ -986,8 +1032,6 @@ function render() {
   pnlEl.textContent = (pnl >= 0 ? '+' : '-') + fmt(pnl);
   pnlEl.className = 'metric-val ' + (pnl > 0 ? 'pos' : pnl < 0 ? 'neg' : '');
 
-  const displayStep = Math.min(currentStep + 1, TOTAL_STEPS);
-  document.getElementById('mStep').textContent = displayStep + ' / ' + TOTAL_STEPS;
 
   if (currentStep < TOTAL_STEPS) {
     // Cumulative stakes from startStep up to currentStep (inclusive)
