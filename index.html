@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="es" data-skin="ghost">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Martingala — Gestor de Bankroll</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0d0f0e;
+    --bg2:       #161a17;
+    --bg3:       #1d2320;
+    --bg4:       #242b26;
+    --text:      #e8ede9;
+    --muted:     #7a8c7d;
+    --border:    rgba(255,255,255,0.06);
+    --border2:   rgba(255,255,255,0.12);
+    --green:     #5dca8a;
+    --green-dim: #2a5c3e;
+    --green-bg:  #0f2b1e;
+    --red:       #e85d5d;
+    --red-dim:   #5c1f1f;
+    --red-bg:    #2a0f0f;
+    --amber:     #e8a83a;
+    --amber-dim: #5c3f0f;
+    --amber-bg:  #2a1b05;
+    --accent:    #4ade80;
+    --glow-a:    rgba(74,222,128,0.04);
+    --glow-b:    rgba(74,222,128,0.03);
+  }
+
+  /* skin vars override :root when data-skin is set on <html> */
+  html[data-skin="ghost"] {
+    --bg:        #0d0f0e; --bg2: #161a17; --bg3: #1d2320; --bg4: #242b26;
+    --text:      #e8ede9; --muted: #7a8c7d;
+    --border:    rgba(255,255,255,0.06); --border2: rgba(255,255,255,0.12);
+    --green:     #5dca8a; --green-dim: #2a5c3e; --green-bg: #0f2b1e;
+    --red:       #e85d5d; --red-dim: #5c1f1f; --red-bg: #2a0f0f;
+    --amber:     #e8a83a; --amber-dim: #5c3f0f; --amber-bg: #2a1b05;
+    --accent:    #4ade80; --glow-a: rgba(74,222,128,0.04); --glow-b: rgba(74,222,128,0.03);
+  }
+  html[data-skin="light"] {
+    --bg:        #f5f0e8; --bg2: #ffffff; --bg3: #ede8de; --bg4: #e0d9cc;
+    --text:      #1a1612; --muted: #7a6e5e;
+    --border:    rgba(0,0,0,0.07); --border2: rgba(0,0,0,0.14);
+    --green:     #2a7a4a; --green-dim: #a8d4b8; --green-bg: #e0f0e8;
+    --red:       #b83030; --red-dim: #f0b8b8; --red-bg: #faeaea;
+    --amber:     #a05a10; --amber-dim: #f0d0a0; --amber-bg: #faf0e0;
+    --accent:    #2a7a4a; --glow-a: rgba(42,122,74,0.04); --glow-b: rgba(42,122,74,0.03);
+  }
+  html[data-skin="dark"] {
+    --bg:        #07080f; --bg2: #0e1018; --bg3: #141720; --bg4: #1a1e28;
+    --text:      #d8ddf0; --muted: #5a6280;
+    --border:    rgba(255,255,255,0.05); --border2: rgba(255,255,255,0.10);
+    --green:     #5090e0; --green-dim: #1a3a70; --green-bg: #080f20;
+    --red:       #e05060; --red-dim: #601828; --red-bg: #180810;
+    --amber:     #e0a030; --amber-dim: #604010; --amber-bg: #180e00;
+    --accent:    #5090e0; --glow-a: rgba(80,144,224,0.05); --glow-b: rgba(80,144,224,0.03);
+  }
+  html[data-skin="rose"] {
+    --bg:        #120810; --bg2: #1e1018; --bg3: #281420; --bg4: #321828;
+    --text:      #f0dde8; --muted: #906070;
+    --border:    rgba(255,180,200,0.07); --border2: rgba(255,180,200,0.14);
+    --green:     #e06090; --green-dim: #701838; --green-bg: #200810;
+    --red:       #e84040; --red-dim: #701010; --red-bg: #200808;
+    --amber:     #e09040; --amber-dim: #703010; --amber-bg: #200c00;
+    --accent:    #e06090; --glow-a: rgba(224,96,144,0.05); --glow-b: rgba(224,96,144,0.03);
+  }
+
+  html { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; min-height: 100vh; transition: background 0.3s, color 0.3s; }
+
+  body {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+    min-height: 100vh;
+  }
+
+  /* Background texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 80% 10%, rgba(74,222,128,0.04) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 60% at 10% 90%, rgba(74,222,128,0.03) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body > * { position: relative; z-index: 1; }
+
+  /* Header */
+  header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 0.5px solid var(--border2);
+  }
+
+  .logo-area h1 {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 0;
+  }
+
+  .logo-area h1 span { color: var(--accent); }
+
+  .logo-area p {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: var(--green-bg);
+    color: var(--green);
+    border: 0.5px solid var(--green-dim);
+    letter-spacing: 0.04em;
+  }
+
+  /* Config panel */
+  .config-panel {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 2rem;
+    align-items: stretch;
+    flex-wrap: wrap;
+  }
+
+  .bankroll-input-wrap {
+    background: var(--bg2);
+    border: 0.5px solid var(--border2);
+    border-radius: 12px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: fit-content;
+    min-width: 320px;
+  }
+  .bankroll-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .stake-now {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding-top: 4px;
+    border-top: 0.5px solid var(--border);
+  }
+  .stake-now-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .stake-now-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--amber);
+  }
+
+  .bankroll-input-wrap label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .bankroll-input-wrap .sym {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 30px;
+    color: var(--muted);
+  }
+
+  .bankroll-input-wrap input {
+    width: 200px;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text);
+    min-width: 0;
+  }
+
+  .bankroll-input-wrap input::placeholder { color: var(--muted); }
+  .bankroll-input-wrap input::-webkit-outer-spin-button,
+  .bankroll-input-wrap input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .bankroll-input-wrap input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+
+  .reset-btn {
+    background: var(--bg2);
+    border: 0.5px solid var(--border2);
+    border-radius: 12px;
+    color: var(--muted);
+    font-size: 36px;
+    line-height: 1;
+    padding: 0 22px;
+    cursor: pointer;
+    transition: all 0.2s;
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .reset-btn.danger {
+    background: var(--red-bg);
+    border-color: var(--red-dim);
+    color: var(--red);
+    animation: pulseDanger 1.8s ease-in-out infinite;
+  }
+  .reset-btn.danger:hover {
+    background: var(--red-dim);
+    color: #fff;
+  }
+  @keyframes pulseDanger {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(232,93,93,0); }
+    50%       { box-shadow: 0 0 0 4px rgba(232,93,93,0.2); }
+  }
+
+  .reset-btn:hover { background: var(--bg3); color: var(--text); border-color: var(--border2); }
+
+  /* Metrics grid */
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 2rem;
+  }
+
+  .metric {
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+
+  .metric label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .metric-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .metric-val.pos { color: var(--green); }
+  .metric-val.neg { color: var(--red); }
+  .metric-val.amber { color: var(--amber); }
+
+  /* Alert */
+  .alert {
+    border-radius: 10px;
+    padding: 14px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    display: none;
+  }
+
+  .alert.bust { background: var(--red-bg); color: var(--red); border: 0.5px solid var(--red-dim); display: block; }
+  .alert.win  { background: var(--green-bg); color: var(--green); border: 0.5px solid var(--green-dim); display: block; }
+
+  /* Progress bar */
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .progress-label span {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .progress-label .steps-txt {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+  }
+
+  .progress-track {
+    height: 4px;
+    background: var(--bg3);
+    border-radius: 2px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: var(--green);
+    transition: width 0.5s cubic-bezier(.4,0,.2,1);
+  }
+
+  .progress-fill.danger { background: var(--red); }
+
+  /* Table */
+  .table-wrap {
+    background: var(--bg2);
+    border: 0.5px solid var(--border2);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  table { width: 100%; border-collapse: collapse; }
+
+  thead { background: var(--bg3); }
+
+  thead th {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 10px 8px;
+    text-align: right;
+    border-bottom: 0.5px solid var(--border2);
+    white-space: nowrap;
+  }
+
+  thead th:first-child { text-align: left; }
+
+  tbody tr {
+    border-bottom: 0.5px solid var(--border);
+    transition: background 0.15s;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr.current-row { background: rgba(74,222,128,0.04); }
+  tbody tr.won-row { background: rgba(93,202,138,0.03); }
+  tbody tr.lost-row { background: rgba(232,93,93,0.03); }
+
+  tbody td {
+    padding: 10px 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    text-align: right;
+    color: var(--text);
+  }
+
+  tbody td:first-child { text-align: left; }
+  tbody td:last-child { text-align: center; }
+
+  .step-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'Syne', sans-serif;
+    border: 0.5px solid var(--border2);
+    color: var(--muted);
+  }
+
+  .step-badge.active { background: var(--amber-bg); color: var(--amber); border-color: var(--amber-dim); }
+  .step-badge.won    { background: var(--green-bg); color: var(--green); border-color: var(--green-dim); }
+  .step-badge.lost   { background: var(--red-bg); color: var(--red); border-color: var(--red-dim); }
+
+  .stake-val { font-weight: 700; color: var(--text); }
+  .profit-val { color: var(--green); }
+  .future-row td { opacity: 0.35; }
+
+  .action-btns { display: flex; gap: 6px; justify-content: center; }
+
+  .btn {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 0.5px solid;
+    transition: all 0.15s;
+  }
+
+  .btn-win  { background: var(--green-bg); color: var(--green); border-color: var(--green-dim); }
+  .btn-win:hover  { background: var(--green-dim); }
+  .btn-loss { background: var(--red-bg); color: var(--red); border-color: var(--red-dim); }
+  .btn-loss:hover { background: var(--red-dim); }
+
+  .result-tag {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-family: 'Syne', sans-serif;
+  }
+
+  .result-tag.win  { color: var(--green); }
+  .result-tag.loss { color: var(--red); }
+
+  /* Footer */
+  footer {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 0.5px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  footer p {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+
+  footer .params {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* History section */
+  .history-section { margin-top: 2rem; }
+
+  .section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .section-head h2 {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .clear-btn {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+  }
+
+  .clear-btn:hover { color: var(--red); }
+
+  .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  .history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+  }
+
+  .history-item .hi-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--muted);
+  }
+
+  .history-item .hi-badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-family: 'Syne', sans-serif;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  .hi-badge.win  { background: var(--green-bg); color: var(--green); }
+  .hi-badge.loss { background: var(--red-bg); color: var(--red); }
+
+  .hi-right {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .hi-right.pos { color: var(--green); }
+  .hi-right.neg { color: var(--red); }
+
+  /* Start step selector */
+  .start-selector {
+    background: var(--bg2);
+    border: 0.5px solid var(--border2);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 1.5rem;
+  }
+
+  .start-selector-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .start-selector-head label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .start-warning {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 4px 10px;
+    border-radius: 6px;
+    display: none;
+  }
+
+  .start-warning.risk {
+    background: var(--amber-bg);
+    color: var(--amber);
+    border: 0.5px solid var(--amber-dim);
+    display: inline-block;
+    font-size: 14px;
+    padding: 6px 14px;
+    animation: riskPulse 1.4s ease-in-out infinite;
+    transform-origin: center;
+  }
+  .start-warning.blocked { background: var(--red-bg); color: var(--red); border: 0.5px solid var(--red-dim); display: inline-block; }
+  @keyframes riskPulse {
+    0%   { transform: scale(1);    box-shadow: 0 0 0 0 rgba(232,168,58,0); }
+    40%  { transform: scale(1.18); box-shadow: 0 0 8px 3px rgba(232,168,58,0.35); }
+    70%  { transform: scale(0.94); box-shadow: 0 0 0 0 rgba(232,168,58,0); }
+    100% { transform: scale(1);    box-shadow: 0 0 0 0 rgba(232,168,58,0); }
+  }
+
+  .step-pills {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .step-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 0.5px solid var(--border2);
+    background: var(--bg3);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    min-width: 52px;
+    flex: 1;
+  }
+
+  .step-pill .pill-num { font-size: 15px; color: var(--text); }
+  .step-pill .pill-sub { font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; font-family: 'Syne', sans-serif; }
+
+  .step-pill:hover:not(.blocked) { border-color: var(--green-dim); background: var(--green-bg); }
+  .step-pill:hover:not(.blocked) .pill-num { color: var(--green); }
+
+  .step-pill.selected { background: var(--green-bg); border-color: var(--green); }
+  .step-pill.selected .pill-num { color: var(--green); }
+  .step-pill.selected .pill-sub { color: var(--green); }
+
+  .step-pill.risk-pill { border-color: var(--amber-dim); }
+  .step-pill.risk-pill .pill-num { color: var(--amber); }
+  .step-pill.risk-pill:hover { background: var(--amber-bg); border-color: var(--amber); }
+
+  .step-pill.risk-pill.selected { background: var(--amber-bg); border-color: var(--amber); animation: pillRiskPulse 1.6s ease-in-out infinite; }
+  .step-pill.risk-pill.selected .pill-num { color: var(--amber); }
+  .step-pill.risk-pill.selected .pill-sub { color: var(--amber); }
+  @keyframes pillRiskPulse {
+    0%   { transform: scale(1);    border-color: var(--amber-dim); }
+    50%  { transform: scale(1.12); border-color: var(--amber); box-shadow: 0 0 10px 2px rgba(232,168,58,0.3); }
+    100% { transform: scale(1);    border-color: var(--amber-dim); }
+  }
+
+  .step-pill.blocked { border-color: var(--red-dim); background: var(--red-bg); cursor: not-allowed; opacity: 0.5; }
+  .step-pill.blocked .pill-num { color: var(--red); }
+  .step-pill.blocked .pill-sub { color: var(--red); }
+
+  .skipped-row td { opacity: 0.25; }
+  .skipped-row .step-badge { background: var(--bg3); border-style: dashed; }
+
+  @media (max-width: 600px) {
+    .metrics { grid-template-columns: repeat(2, 1fr); }
+    .config-panel { grid-template-columns: 1fr; }
+    .reset-btn { padding: 14px; }
+    header { flex-direction: column; gap: 12px; }
+    tbody td { padding: 10px 10px; font-size: 12px; }
+    thead th { padding: 10px 10px; }
+    .logo-area h1 { font-size: 22px; }
+    .step-pills { gap: 6px; }
+    .step-pill { min-width: 46px; padding: 7px 10px; }
+  }
+
+  /* ═══════════════════════════════════════════
+     SKIN SWITCHER DOTS
+  ═══════════════════════════════════════════ */
+  .logo-row { display:flex; align-items:center; gap:10px; margin-bottom:0; }
+  .logo-row h1 { margin-bottom:0; }
+  .skin-dots { display:flex; gap:5px; align-items:center; }
+  .skin-btn {
+    width:14px; height:14px; border-radius:3px;
+    border:1.5px solid transparent; cursor:pointer;
+    transition:transform .15s, border-color .15s; outline:none; padding:0;
+  }
+  .skin-btn:hover { transform:scale(1.2); }
+  .skin-btn.active { border-color:rgba(255,255,255,0.7); transform:scale(1.15); }
+  [data-skin="dark"]  .skin-btn.active { border-color:rgba(255,255,255,0.6); }
+  [data-skin="light"] .skin-btn.active { border-color:rgba(0,0,0,0.5); }
+  [data-skin="rose"]  .skin-btn.active { border-color:rgba(255,255,255,0.7); }
+
+  .skin-btn[data-skin="ghost"] { background:#1d2320; }
+  .skin-btn[data-skin="light"] { background:#e8e0d8; }
+  .skin-btn[data-skin="dark"]  { background:#0a0a12; }
+  .skin-btn[data-skin="rose"]  { background:#3d1525; }
+
+
+
+
+  /* ═══════════════════════════════════════════
+     SKIN: ROSE — vino oscuro/rosa
+  ═══════════════════════════════════════════ */
+  [data-skin="rose"] {
+    --bg:        #120810;
+    --bg2:       #1e1018;
+    --bg3:       #281420;
+    --bg4:       #321828;
+    --text:      #f0dde8;
+    --muted:     #906070;
+    --border:    rgba(255,180,200,0.07);
+    --border2:   rgba(255,180,200,0.14);
+    --green:     #e06090;
+    --green-dim: #701838;
+    --green-bg:  #200810;
+    --red:       #e84040;
+    --red-dim:   #701010;
+    --red-bg:    #200808;
+    --amber:     #e09040;
+    --amber-dim: #703010;
+    --amber-bg:  #200c00;
+    --accent:    #e06090;
+    --glow-a:    rgba(224,96,144,0.05);
+    --glow-b:    rgba(224,96,144,0.03);
+  }
+
+  /* background glow uses skin vars */
+  body::before {
+    background:
+      radial-gradient(ellipse 60% 40% at 80% 10%, var(--glow-a, rgba(74,222,128,0.04)) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 60% at 10% 90%, var(--glow-b, rgba(74,222,128,0.03)) 0%, transparent 50%);
+  }
+
+  /* light skin text corrections */
+  [data-skin="light"] html { background: var(--bg); }
+  [data-skin="light"] .future-row td { opacity: 0.4; }
+  [data-skin="light"] .skipped-row td { opacity: 0.3; }
+
+</style>
+</head>
+<body>
+
+
+<header>
+  <div class="logo-area">
+    <div class="logo-row">
+      <h1>Martin<span>gala</span></h1>
+      <div class="skin-dots">
+        <button class="skin-btn active" data-skin="ghost" title="Ghost"  onclick="setSkin(this)"></button>
+        <button class="skin-btn"        data-skin="light" title="Light"  onclick="setSkin(this)"></button>
+        <button class="skin-btn"        data-skin="dark"  title="Dark"   onclick="setSkin(this)"></button>
+        <button class="skin-btn"        data-skin="rose"  title="Rose"   onclick="setSkin(this)"></button>
+      </div>
+    </div>
+    <p>Gestor de Bankroll — Cuota 1.85</p>
+  </div>
+  <div class="badge">Hasta 7 Pasos · Protege La Primera</div>
+</header>
+
+<div class="config-panel">
+  <div class="bankroll-input-wrap">
+    <div class="bankroll-top">
+      <label>Bankroll</label>
+      <span class="sym">$</span>
+      <input type="number" id="bankrollInput" min="1" step="0.01" value="20000" placeholder="20000" oninput="onBankrollChange()">
+    </div>
+    <div class="stake-now">
+      <span class="stake-now-label">Apostar</span>
+      <span class="stake-now-val" id="stakeNow">—</span>
+    </div>
+  </div>
+  <button class="reset-btn" onclick="resetSession()">↺</button>
+</div>
+
+<div class="start-selector">
+  <div class="start-selector-head">
+    <label>Arrancar desde el paso</label>
+    <span class="start-warning" id="startWarning"></span>
+  </div>
+  <div class="step-pills" id="stepPills"></div>
+</div>
+
+<div id="alertBox" class="alert"></div>
+
+<div class="metrics">
+  <div class="metric">
+    <label>Bankroll</label>
+    <div class="metric-val" id="mBankroll">$20,000.00</div>
+  </div>
+  <div class="metric">
+    <label>P&L Sesión</label>
+    <div class="metric-val" id="mPnl">€0.00</div>
+  </div>
+  <div class="metric">
+    <label>Paso actual</label>
+    <div class="metric-val amber" id="mStep">1 / 7</div>
+  </div>
+  <div class="metric">
+    <label>Ganancia si gana</label>
+    <div class="metric-val pos" id="mRecover">—</div>
+  </div>
+</div>
+
+<div class="progress-label">
+  <span>Progreso secuencia</span>
+  <span class="steps-txt" id="progressTxt">0 / 7</span>
+</div>
+<div class="progress-track">
+  <div class="progress-fill" id="progressFill" style="width:0%"></div>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>P</th>
+        <th>%Bank</th>
+        <th>Stake</th>
+        <th>Acum.</th>
+        <th>Gana</th>
+        <th>Result.</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+</div>
+
+<div class="history-section">
+  <div class="section-head">
+    <h2>Historial de secuencias</h2>
+    <button class="clear-btn" onclick="clearHistory()">Limpiar</button>
+  </div>
+  <div class="history-list" id="historyList">
+    <div style="font-size:12px;color:var(--muted);text-align:center;padding:16px;font-family:'JetBrains Mono',monospace;">
+      Sin historial aún
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>Martingala Bankroll Manager</p>
+  <span class="params">Cuota: 1.85 · Pasos: 7 · Pini→Crack</span>
+</footer>
+
+<script>
+const RATIOS = [0.508171396, 1.109084072, 2.417117245, 5.263893406, 11.45977315, 24.94537157, 54.29658915];
+const TOTAL_STEPS = 7;
+const MAX_START_STEP = 5;
+const ODD = 1.85;
+
+const STEP_CONFIG = [
+  { label: 'Pini',     cls: '' },
+  { label: 'Low',      cls: '' },
+  { label: 'Hie',      cls: '' },
+  { label: 'Awesom',   cls: 'risk-pill' },
+  { label: 'Maxim',    cls: 'risk-pill' },
+  { label: 'Agresive', cls: 'risk-pill' },
+  { label: 'Crack',    cls: 'risk-pill' },
+];
+
+let bankroll = 20000;
+let startBankroll = 20000;
+let startStep = 0;    // the step we entered the sequence from (for cumulative calc)
+let currentStep = 0;  // active step index
+let results = Array(TOTAL_STEPS).fill(null);
+let history = [];
+
+function calcStakes(br) {
+  return RATIOS.map(r => (r / 100) * br);
+}
+
+function fmt(n) {
+  return '$' + Math.abs(n).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function renderPills() {
+  const container = document.getElementById('stepPills');
+  container.innerHTML = '';
+  // Secuencia activa = hay algún resultado o estamos más allá del startStep
+  const sequenceActive = results.some(r => r === 'win' || r === 'loss') || currentStep > startStep;
+  for (let i = 0; i < MAX_START_STEP; i++) {
+    const cfg = STEP_CONFIG[i];
+    const isSelected = (i === startStep);
+    // Ocultar pasos anteriores al seleccionado mientras la secuencia está activa
+    if (sequenceActive && i < startStep) continue;
+    const pill = document.createElement('button');
+    pill.className = 'step-pill ' + cfg.cls + (isSelected ? ' selected' : '');
+    pill.innerHTML = `<span class="pill-num">${i + 1}</span><span class="pill-sub">${cfg.label}</span>`;
+    if (!sequenceActive) {
+      pill.onclick = () => setStartStep(i);
+    }
+    container.appendChild(pill);
+  }
+
+  // Warning label
+  const warn = document.getElementById('startWarning');
+  if (startStep >= 3) {
+    warn.className = 'start-warning risk';
+    warn.textContent = '⚠ Alto riesgo';
+  } else if (startStep > 0) {
+    warn.className = 'start-warning risk';
+    warn.textContent = 'Acumulado incluido';
+    warn.style.background = 'var(--bg3)';
+    warn.style.color = 'var(--muted)';
+    warn.style.border = '0.5px solid var(--border2)';
+    warn.style.display = 'inline-block';
+  } else {
+    warn.className = 'start-warning';
+  }
+}
+
+function setStartStep(idx) {
+  startStep = idx;
+  currentStep = idx;
+  results = Array(TOTAL_STEPS).fill(null);
+  for (let i = 0; i < idx; i++) results[i] = 'skipped';
+  renderPills();
+  render();
+}
+
+function render() {
+  const stakes = calcStakes(startBankroll);
+  const body = document.getElementById('tableBody');
+  body.innerHTML = '';
+
+  const alertBox = document.getElementById('alertBox');
+  alertBox.className = 'alert';
+  alertBox.textContent = '';
+
+  if (currentStep >= TOTAL_STEPS) {
+    alertBox.className = 'alert win';
+    alertBox.textContent = '✓ Secuencia completada — reinicia para una nueva entrada';
+  } else if (bankroll < stakes[currentStep]) {
+    alertBox.className = 'alert bust';
+    alertBox.textContent = '⚠ Bankroll insuficiente para continuar la martingala';
+  }
+
+  let fullCumul = 0;
+  for (let i = 0; i < TOTAL_STEPS; i++) {
+    const stake = stakes[i];
+    // Only accumulate from the selected start step onward
+    if (i >= startStep) fullCumul += stake;
+    const netProfit = (stake * ODD) - fullCumul;
+
+    const isSkipped = results[i] === 'skipped';
+    if (isSkipped) continue;
+    const isCurrent = (i === currentStep && currentStep < TOTAL_STEPS);
+    const isWon = results[i] === 'win';
+    const isLost = results[i] === 'loss';
+    const isFuture = !isCurrent && !isWon && !isLost;
+
+    const tr = document.createElement('tr');
+    if (isSkipped) tr.className = 'skipped-row';
+    else if (isCurrent) tr.className = 'current-row';
+    else if (isWon) tr.className = 'won-row';
+    else if (isLost) tr.className = 'lost-row';
+    else if (isFuture) tr.className = 'future-row';
+
+    let badgeClass = '';
+    if (isWon) badgeClass = 'won';
+    else if (isLost) badgeClass = 'lost';
+    else if (isCurrent) badgeClass = 'active';
+
+    let actionHtml = '';
+    if (isSkipped) {
+      actionHtml = `<span style="color:var(--muted);font-family:'Syne',sans-serif;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Omitido</span>`;
+    } else if (isCurrent) {
+      actionHtml = `<div class="action-btns">
+        <button class="btn btn-win" onclick="markResult(${i},'win')">✓ Gana</button>
+        <button class="btn btn-loss" onclick="markResult(${i},'loss')">✗ Pierde</button>
+      </div>`;
+    } else if (isWon) {
+      actionHtml = `<span class="result-tag win">Ganado</span>`;
+    } else if (isLost) {
+      actionHtml = `<span class="result-tag loss">Perdido</span>`;
+    } else {
+      actionHtml = `<span style="color:var(--muted);font-family:'Syne',sans-serif;font-size:11px;">—</span>`;
+    }
+
+    tr.innerHTML = `
+      <td><span class="step-badge ${badgeClass}">${i + 1}</span></td>
+      <td>${RATIOS[i].toFixed(2)}%</td>
+      <td class="stake-val">${Math.abs(stake).toLocaleString('es-ES', {minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      <td>${fmt(fullCumul)}</td>
+      <td class="profit-val">${fmt(netProfit)}</td>
+      <td>${actionHtml}</td>
+    `;
+    body.appendChild(tr);
+  }
+
+  // Metrics
+  const pnl = bankroll - startBankroll;
+  document.getElementById('mBankroll').textContent = fmt(bankroll);
+  // Reset btn danger state while sequence is active
+  const seqActive = results.some(r => r === 'win' || r === 'loss') || currentStep > startStep;
+  document.querySelector('.reset-btn').classList.toggle('danger', seqActive);
+
+  const pnlEl = document.getElementById('mPnl');
+  pnlEl.textContent = (pnl >= 0 ? '+' : '-') + fmt(pnl);
+  pnlEl.className = 'metric-val ' + (pnl > 0 ? 'pos' : pnl < 0 ? 'neg' : '');
+
+  const displayStep = Math.min(currentStep + 1, TOTAL_STEPS);
+  document.getElementById('mStep').textContent = displayStep + ' / ' + TOTAL_STEPS;
+
+  if (currentStep < TOTAL_STEPS) {
+    // Cumulative stakes from startStep up to currentStep (inclusive)
+    const currFullCumul = stakes.slice(startStep, currentStep + 1).reduce((a, b) => a + b, 0);
+    const recovery = stakes[currentStep] * ODD - currFullCumul;
+    document.getElementById('mRecover').textContent = fmt(recovery);
+    // Current stake to bet
+    const stakeVal = stakes[currentStep];
+    document.getElementById('stakeNow').textContent = '$' + stakeVal.toLocaleString('es-ES', {minimumFractionDigits:2, maximumFractionDigits:2});
+  } else {
+    document.getElementById('mRecover').textContent = '—';
+    document.getElementById('stakeNow').textContent = '—';
+  }
+
+  // Progress: from startStep to TOTAL_STEPS
+  const totalSteps = TOTAL_STEPS - startStep;
+  const doneSteps = currentStep - startStep;
+  const pct = totalSteps > 0 ? (doneSteps / totalSteps) * 100 : 100;
+  document.getElementById('progressFill').style.width = Math.max(0, pct) + '%';
+  document.getElementById('progressFill').className = 'progress-fill' + (bankroll < startBankroll ? ' danger' : '');
+  document.getElementById('progressTxt').textContent = Math.max(0, doneSteps) + ' / ' + totalSteps;
+
+  renderHistory();
+}
+
+function markResult(step, result) {
+  const stakes = calcStakes(startBankroll);
+  results[step] = result;
+
+  if (result === 'win') {
+    const fullCumul = stakes.slice(startStep, step + 1).reduce((a, b) => a + b, 0);
+    const profit = (stakes[step] * ODD) - fullCumul;
+    const newBankroll = bankroll - stakes[step] + (stakes[step] * ODD);
+
+    history.unshift({
+      type: 'win',
+      step: step + 1,
+      startedAt: startStep + 1,
+      profit: profit,
+      bankrollBefore: startBankroll,
+      bankrollAfter: newBankroll,
+      date: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
+    });
+
+    bankroll = newBankroll;
+    startBankroll = bankroll;
+    currentStep = startStep;
+    results = Array(TOTAL_STEPS).fill(null);
+    for (let i = 0; i < startStep; i++) results[i] = 'skipped';
+
+  } else {
+    const loss = stakes[step];
+    history.unshift({
+      type: 'loss',
+      step: step + 1,
+      startedAt: startStep + 1,
+      profit: -loss,
+      bankrollBefore: bankroll,
+      bankrollAfter: bankroll - loss,
+      date: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
+    });
+
+    bankroll = (step === TOTAL_STEPS - 1) ? 0 : bankroll - loss;
+    currentStep = step + 1;
+    if (currentStep >= TOTAL_STEPS) currentStep = TOTAL_STEPS;
+  }
+
+  document.getElementById('bankrollInput').value = bankroll.toFixed(2);
+  renderPills();
+  render();
+}
+
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  if (history.length === 0) {
+    list.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:16px;font-family:\'JetBrains Mono\',monospace;">Sin historial aún</div>';
+    return;
+  }
+
+  list.innerHTML = history.slice(0, 20).map(h => `
+    <div class="history-item">
+      <div class="hi-left">
+        <span class="hi-badge ${h.type}">${h.type === 'win' ? 'Victoria' : 'Derrota'}</span>
+        <span>P${h.step}${h.startedAt > 1 ? ' (inicio P' + h.startedAt + ')' : ''} · ${h.date}</span>
+        <span>${fmt(h.bankrollBefore)} → ${fmt(h.bankrollAfter)}</span>
+      </div>
+      <div class="hi-right ${h.profit >= 0 ? 'pos' : 'neg'}">
+        ${h.profit >= 0 ? '+' : ''}${h.profit >= 0 ? fmt(h.profit) : '-' + fmt(h.profit)}
+      </div>
+    </div>
+  `).join('');
+}
+
+function onBankrollChange() {
+  const v = parseFloat(document.getElementById('bankrollInput').value);
+  if (!isNaN(v) && v > 0) {
+    bankroll = v;
+    startBankroll = v;
+    results = Array(TOTAL_STEPS).fill(null);
+    for (let i = 0; i < startStep; i++) results[i] = 'skipped';
+    currentStep = startStep;
+    render();
+  }
+}
+
+function resetSession() {
+  const sequenceActive = results.some(r => r === 'win' || r === 'loss') || currentStep > startStep;
+  if (sequenceActive) {
+    if (!confirm('¿Abandonar la secuencia en curso y perder el progreso?')) return;
+  }
+  const v = parseFloat(document.getElementById('bankrollInput').value);
+  bankroll = (!isNaN(v) && v > 0) ? v : 100;
+  startBankroll = bankroll;
+  results = Array(TOTAL_STEPS).fill(null);
+  for (let i = 0; i < startStep; i++) results[i] = 'skipped';
+  currentStep = startStep;
+  renderPills();
+  render();
+}
+
+function clearHistory() {
+  history = [];
+  renderHistory();
+  saveState();
+}
+
+// ─── PERSISTENCIA localStorage ───────────────────────────────────────────────
+const SAVE_KEY = 'martingala_state';
+
+function saveState() {
+  const state = {
+    bankroll,
+    startBankroll,
+    startStep,
+    currentStep,
+    results,
+    history,
+  };
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return false;
+    const s = JSON.parse(raw);
+    if (typeof s.bankroll !== 'number') return false;
+    bankroll      = s.bankroll;
+    startBankroll = s.startBankroll ?? s.bankroll;
+    startStep     = s.startStep    ?? 0;
+    currentStep   = s.currentStep  ?? 0;
+    results       = Array.isArray(s.results) ? s.results : Array(TOTAL_STEPS).fill(null);
+    history       = Array.isArray(s.history) ? s.history : [];
+    return true;
+  } catch(e) { return false; }
+}
+
+// Patch: save after every state-changing operation
+const _origRender = render;
+render = function() {
+  _origRender();
+  saveState();
+};
+
+// ─── SKIN ────────────────────────────────────────────────────────────────────
+function setSkin(btn) {
+  const skin = btn.dataset.skin;
+  document.documentElement.setAttribute('data-skin', skin);
+  document.querySelectorAll('.skin-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  try { localStorage.setItem('martingala-skin', skin); } catch(e) {}
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+(function init() {
+  // Restore skin
+  const valid = ['ghost','light','dark','rose'];
+  const savedSkin = localStorage.getItem('martingala-skin');
+  if (savedSkin && valid.includes(savedSkin)) {
+    document.documentElement.setAttribute('data-skin', savedSkin);
+    const btn = document.querySelector('.skin-btn[data-skin="' + savedSkin + '"]');
+    if (btn) { document.querySelectorAll('.skin-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
+  }
+
+  // Restore session state
+  const restored = loadState();
+  if (restored) {
+    document.getElementById('bankrollInput').value = bankroll.toFixed(2);
+  }
+
+  renderPills();
+  render();
+})();
+
+</script>
+</body>
+</html>
