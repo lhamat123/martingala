@@ -2,7 +2,12 @@
 <html lang="es" data-skin="ghost">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Martingala">
+<meta name="theme-color" content="#0d0f0e">
 <title>Martingala — Gestor de Bankroll</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
@@ -30,6 +35,133 @@
     --accent:    #4ade80;
     --glow-a:    rgba(74,222,128,0.04);
     --glow-b:    rgba(74,222,128,0.03);
+  }
+
+  .info-disclaimer {
+    margin-top: 16px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: var(--red-bg);
+    border: 0.5px solid var(--red-dim);
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1.5;
+    text-align: center;
+  }
+
+  /* Info button & panel */
+  .subtitle-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 4px;
+  }
+  .subtitle-row p { margin-top: 0; }
+
+  .info-btn {
+    position: fixed;
+    top: 14px;
+    right: 18px;
+    z-index: 999;
+    background: var(--bg2);
+    border: 0.5px solid var(--border2);
+    border-radius: 50%;
+    width: 43px;
+    height: 43px;
+    font-size: 22px;
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    line-height: 1;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  }
+  .info-btn:hover, .info-btn.active {
+    background: var(--green-bg);
+    border-color: var(--green-dim);
+    color: var(--green);
+  }
+
+  .info-panel {
+    display: none;
+    margin-bottom: 0.75rem;
+  }
+  .info-panel.open { display: block; }
+
+  .info-panel-inner {
+    background: var(--bg2);
+    border: 0.5px solid var(--border2);
+    border-radius: 14px;
+    padding: 16px 18px;
+    animation: slideDown 0.2s ease;
+  }
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .info-close-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .info-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .info-close {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 14px;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.15s;
+  }
+  .info-close:hover { color: var(--red); }
+
+  .info-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .info-block {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .info-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .info-block strong {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+  .info-block p {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+    margin-top: 0;
   }
 
   /* skin vars override :root when data-skin is set on <html> */
@@ -217,14 +349,14 @@
   .reset-btn {
     background: var(--bg2);
     border: 0.5px solid var(--border2);
-    border-radius: 12px;
+    border-radius: 50%;
     color: var(--muted);
-    font-size: 26px;
-    line-height: 1;
-    padding: 0 16px;
+    font-size: 30px;
+    width: 58px;
+    height: 58px;
+    padding: 0;
     cursor: pointer;
     transition: all 0.2s;
-    align-self: stretch;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -247,27 +379,7 @@
 
   .reset-btn:hover { background: var(--bg3); color: var(--text); border-color: var(--border2); }
 
-  /* Metrics grid */
-  .metrics {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    margin-bottom: 0.5rem;
-    background: var(--bg2);
-    border: 0.5px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 16px;
-  }
-
-  .metric label {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--muted);
-    display: block;
-    margin-bottom: 8px;
-  }
+  /* Metrics grid — removed, values now live inside the action buttons */
 
   .metric-val {
     font-family: 'JetBrains Mono', monospace;
@@ -446,6 +558,8 @@
     margin-bottom: 8px;
     border: 0.5px solid var(--border2);
     border-radius: 12px;
+    padding: 10px 12px;
+    background: var(--bg2);
   }
   .action-bar.visible { display: flex; }
   .action-bar-label {
@@ -459,25 +573,79 @@
   }
   .btn-win-lg, .btn-loss-lg {
     font-family: 'Syne', sans-serif;
-    font-size: 14px;
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    padding: 10px 28px;
+    padding: 12px 20px;
     border-radius: 8px;
     cursor: pointer;
     border: 0.5px solid;
     transition: all 0.15s;
     flex: 1;
-    max-width: 180px;
+    max-width: 220px;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
   }
   .btn-win-lg  { background: var(--green-bg); color: var(--green); border-color: var(--green-dim); }
   .btn-win-lg:hover  { background: var(--green-dim); }
   .btn-loss-lg { background: var(--red-bg); color: var(--red); border-color: var(--red-dim); }
   .btn-loss-lg:hover { background: var(--red-dim); color: #fff; }
 
+  .btn-metric-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    opacity: 0.7;
+  }
+  .btn-metric-action {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+  }
+  .btn-metric-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+
   /* Hide result column header/cell when action bar is used */
+
+  .progress-frame {
+    background: var(--bg2);
+    border: 0.5px solid var(--border2);
+    border-radius: 12px;
+    padding: 12px 16px 0;
+    margin-bottom: 8px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .progress-frame-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .progress-frame-header span:first-child {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .progress-frame .progress-track {
+    margin-bottom: 0;
+    margin-left: -16px;
+    margin-right: -16px;
+    border-radius: 0;
+    height: 8px;
+  }
 
 
   footer {
@@ -692,7 +860,6 @@
   .skipped-row .step-badge { background: var(--bg3); border-style: dashed; }
 
   @media (max-width: 600px) {
-    .metrics { grid-template-columns: repeat(2, 1fr); }
     .config-panel { grid-template-columns: 1fr; }
     .reset-btn { padding: 14px; }
     header { flex-direction: column; gap: 12px; }
@@ -704,26 +871,33 @@
   }
 
   /* ═══════════════════════════════════════════
-     SKIN SWITCHER DOTS
+     SKIN SWITCHER
   ═══════════════════════════════════════════ */
   .logo-row { display:flex; align-items:center; gap:10px; margin-bottom:0; }
   .logo-row h1 { margin-bottom:0; }
-  .skin-dots { display:flex; gap:5px; align-items:center; }
+  .skin-dots { display:flex; gap:6px; align-items:center; }
   .skin-btn {
-    width:14px; height:14px; border-radius:3px;
-    border:1.5px solid transparent; cursor:pointer;
-    transition:transform .15s, border-color .15s; outline:none; padding:0;
+    width: 20px; height: 20px; border-radius: 5px;
+    border: 2px solid transparent; cursor: pointer;
+    transition: transform .15s, border-color .2s, box-shadow .2s;
+    outline: none; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 800; font-family: 'Syne', sans-serif;
+    letter-spacing: -0.02em;
   }
-  .skin-btn:hover { transform:scale(1.2); }
-  .skin-btn.active { border-color:rgba(255,255,255,0.7); transform:scale(1.15); }
-  [data-skin="dark"]  .skin-btn.active { border-color:rgba(255,255,255,0.6); }
-  [data-skin="light"] .skin-btn.active { border-color:rgba(0,0,0,0.5); }
-  [data-skin="rose"]  .skin-btn.active { border-color:rgba(255,255,255,0.7); }
+  .skin-btn:hover { transform: scale(1.12); }
+  .skin-btn.active {
+    box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 35%, transparent);
+    transform: scale(1.1);
+  }
+  [data-skin="light"] .skin-btn.active { box-shadow: 0 0 0 3px rgba(42,122,74,0.3); }
 
-  .skin-btn[data-skin="ghost"] { background:#1d2320; }
-  .skin-btn[data-skin="light"] { background:#e8e0d8; }
-  .skin-btn[data-skin="dark"]  { background:#0a0a12; }
-  .skin-btn[data-skin="rose"]  { background:#3d1525; }
+  .skin-btn[data-skin="ghost"] { background: linear-gradient(135deg,#1d2320,#2e3b2e); color:#5dca8a; border-color: #5dca8a; }
+  .skin-btn[data-skin="light"] { background: linear-gradient(135deg,#f0ebe0,#d8d0c0); color:#2a7a4a; border-color: #2a7a4a; }
+  .skin-btn[data-skin="dark"]  { background: linear-gradient(135deg,#07080f,#141728); color:#5090e0; border-color: #5090e0; }
+  .skin-btn[data-skin="rose"]  { background: linear-gradient(135deg,#200810,#4a1030); color:#e06090; border-color: #e06090; }
+  .skin-btn[data-skin="neon"]  { background: linear-gradient(135deg,#001a0d,#002a10); color:#00ff88; border-color: #00ff88; }
+  .skin-btn[data-skin="slate"] { background: linear-gradient(135deg,#1a1f2e,#252d40); color:#a0b4d0; border-color: #a0b4d0; }
 
 
 
@@ -754,6 +928,32 @@
     --glow-b:    rgba(224,96,144,0.03);
   }
 
+  /* ═══════════════════════════════════════════
+     SKIN: NEON — verde eléctrico sobre negro
+  ═══════════════════════════════════════════ */
+  html[data-skin="neon"] {
+    --bg:        #000d07; --bg2: #001a0d; --bg3: #002414; --bg4: #002e1a;
+    --text:      #ccffe8; --muted: #3a8a5a;
+    --border:    rgba(0,255,136,0.06); --border2: rgba(0,255,136,0.14);
+    --green:     #00ff88; --green-dim: #005530; --green-bg: #001a0d;
+    --red:       #ff4466; --red-dim:   #660018; --red-bg:   #1a0008;
+    --amber:     #ffcc00; --amber-dim: #664400; --amber-bg: #1a0e00;
+    --accent:    #00ff88; --glow-a: rgba(0,255,136,0.07); --glow-b: rgba(0,255,136,0.04);
+  }
+
+  /* ═══════════════════════════════════════════
+     SKIN: SLATE — azul pizarra frío
+  ═══════════════════════════════════════════ */
+  html[data-skin="slate"] {
+    --bg:        #0e1117; --bg2: #161b27; --bg3: #1e2535; --bg4: #252f42;
+    --text:      #d4dff0; --muted: #5a7090;
+    --border:    rgba(160,180,208,0.07); --border2: rgba(160,180,208,0.14);
+    --green:     #60c8a0; --green-dim: #1a4a38; --green-bg: #081a14;
+    --red:       #e05870; --red-dim:   #601828; --red-bg:   #180810;
+    --amber:     #d4a040; --amber-dim: #604010; --amber-bg: #180e00;
+    --accent:    #a0b4d0; --glow-a: rgba(160,180,208,0.05); --glow-b: rgba(160,180,208,0.03);
+  }
+
   /* background glow uses skin vars */
   body::before {
     background:
@@ -765,6 +965,79 @@
   [data-skin="light"] html { background: var(--bg); }
   [data-skin="light"] .future-row td { opacity: 0.4; }
   [data-skin="light"] .skipped-row td { opacity: 0.3; }
+  /* ═══════════════════════════════════════════
+     PWA INSTALL BANNER
+  ═══════════════════════════════════════════ */
+  #pwa-banner {
+    display: none;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 9999;
+    background: var(--bg2);
+    border-top: 1px solid var(--border2);
+    padding: 14px 18px 20px;
+    box-shadow: 0 -8px 32px rgba(0,0,0,0.5);
+    animation: slideUp 0.3s ease;
+  }
+  #pwa-banner.show { display: block; }
+  @keyframes slideUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+  .pwa-banner-inner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .pwa-icon {
+    width: 48px; height: 48px;
+    background: var(--green-bg);
+    border: 1px solid var(--green-dim);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; font-weight: 800; color: var(--accent);
+    font-family: 'Syne', sans-serif;
+    flex-shrink: 0;
+  }
+  .pwa-text { flex: 1; }
+  .pwa-text strong {
+    display: block;
+    font-size: 13px; font-weight: 800;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+  .pwa-text span {
+    font-size: 11px; color: var(--muted);
+    font-weight: 600; letter-spacing: 0.02em;
+  }
+  .pwa-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .pwa-install-btn {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 16px;
+    font-size: 12px; font-weight: 800;
+    font-family: 'Syne', sans-serif;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .pwa-install-btn:hover { opacity: 0.85; }
+  .pwa-dismiss-btn {
+    background: transparent;
+    color: var(--muted);
+    border: 0.5px solid var(--border2);
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 12px; font-weight: 700;
+    font-family: 'Syne', sans-serif;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .pwa-dismiss-btn:hover { color: var(--text); }
 
 </style>
 </head>
@@ -776,30 +1049,90 @@
     <div class="logo-row">
       <h1>Martin<span>gala</span></h1>
       <div class="skin-dots">
-        <button class="skin-btn active" data-skin="ghost" title="Ghost"  onclick="setSkin(this)"></button>
-        <button class="skin-btn"        data-skin="light" title="Light"  onclick="setSkin(this)"></button>
-        <button class="skin-btn"        data-skin="dark"  title="Dark"   onclick="setSkin(this)"></button>
-        <button class="skin-btn"        data-skin="rose"  title="Rose"   onclick="setSkin(this)"></button>
+        <button class="skin-btn active" data-skin="ghost" title="Ghost"  onclick="setSkin(this)">██</button>
+        <button class="skin-btn"        data-skin="light" title="Light"  onclick="setSkin(this)">██</button>
+        <button class="skin-btn"        data-skin="dark"  title="Dark"   onclick="setSkin(this)">██</button>
+        <button class="skin-btn"        data-skin="rose"  title="Rose"   onclick="setSkin(this)">██</button>
+        <button class="skin-btn"        data-skin="neon"  title="Neon"   onclick="setSkin(this)">██</button>
+        <button class="skin-btn"        data-skin="slate" title="Slate"  onclick="setSkin(this)">██</button>
       </div>
     </div>
     <p>Gestor de Bankroll — Cuota 1.85</p>
   </div>
-  <div class="badge">Hasta 7 Pasos · Protege La Primera</div>
+  <button class="info-btn" id="infoBtn" onclick="toggleInfo()" title="¿Cómo funciona?">ℹ</button>
+
 </header>
 
-<div class="config-panel">
-  <div class="bankroll-input-wrap">
-    <div class="bankroll-top">
-      <label>Bankroll</label>
-      <span class="sym">$</span>
-      <input type="number" id="bankrollInput" min="1" step="0.01" value="20000" placeholder="20000" oninput="onBankrollChange()">
+<div class="info-panel" id="infoPanel">
+  <div class="info-panel-inner">
+    <div class="info-close-row">
+      <span class="info-title">¿Cómo funciona este sistema?</span>
+      <button class="info-close" onclick="toggleInfo()">✕</button>
     </div>
-    <div class="stake-now">
-      <span class="stake-now-label">Apostar</span>
-      <span class="stake-now-val" id="stakeNow">—</span>
+    <div class="info-body">
+      <div class="info-block">
+        <span class="info-icon">🎯</span>
+        <div>
+          <strong>Objetivo</strong>
+          <p>Recuperar pérdidas anteriores con una sola apuesta ganadora a cuota 1.85 unidades. Cada paso apuesta lo necesario para cubrir todo lo perdido y obtener ganancia neta.</p>
+        </div>
+      </div>
+      <div class="info-block">
+        <span class="info-icon">📊</span>
+        <div>
+          <strong>Estructura</strong>
+          <p>La secuencia tiene hasta 7 pasos. Cada paso tiene un % fijo del bankroll calculado para que, si ganas en ese paso a cuota 1.85, recuperas todo lo acumulado y generas ganancia.</p>
+        </div>
+      </div>
+      <div class="info-block">
+        <span class="info-icon">🚀</span>
+        <div>
+          <strong>Punto de entrada</strong>
+          <p>Puedes iniciar desde cualquier stake (1 a 5) según el riesgo. Iniciar en stake 1 es lo recomendado. Desde stake 4 en adelante es zona de alto riesgo.</p>
+        </div>
+      </div>
+      <div class="info-block">
+        <span class="info-icon">✅</span>
+        <div>
+          <strong>Si ganas</strong>
+          <p>La secuencia se reinicia desde tu paso de entrada. El bankroll se actualiza con la ganancia neta obtenida.</p>
+        </div>
+      </div>
+      <div class="info-block">
+        <span class="info-icon">❌</span>
+        <div>
+          <strong>Si pierdes</strong>
+          <p>Avanzas al siguiente paso con una apuesta mayor para cubrir el acumulado. Si llegas al paso 7 y pierdes, pierde tu BankRoll.</p>
+        </div>
+      </div>
+      <div class="info-block">
+        <span class="info-icon">⚠️</span>
+        <div>
+          <strong>Riesgo</strong>
+          <p>La martingala nunca garantiza ganancias. Una racha de pérdidas consecutivas puede comprometer el BankRoll.</p>
+        </div>
+      </div>
+    </div>
+    <div class="info-disclaimer">
+      🔞 Esta herramienta es sólo de gestión. Apostar implica riesgo real de pérdida. Juega de forma responsable, no apuestes más de lo que puedes permitirte perder.
     </div>
   </div>
-  <button class="reset-btn" onclick="resetSession()">↺</button>
+</div>
+<div class="config-panel">
+  <div style="display:flex; align-items:stretch; gap:8px; flex:1;">
+    <div class="bankroll-input-wrap" style="flex:1;">
+      <div class="bankroll-top">
+        <label>Bankroll</label>
+        <span class="sym">$</span>
+        <input type="number" id="bankrollInput" min="1" step="0.01" value="20000" placeholder="20000" oninput="onBankrollChange()">
+      </div>
+      <div class="stake-now">
+        <span class="stake-now-label">Apostar</span>
+        <span class="stake-now-val" id="stakeNow">—</span>
+      </div>
+    </div>
+    <button class="reset-btn" onclick="resetSession()" title="Reiniciar sesión">↺</button>
+  </div>
 </div>
 
 <div class="start-selector">
@@ -812,28 +1145,25 @@
 
 <div id="alertBox" class="alert"></div>
 
-<div class="metrics">
-  <div class="metric">
-    <label>P&L Sesión</label>
-    <div class="metric-val" id="mPnl">€0.00</div>
-  </div>
-  <div class="metric">
-    <label>Ganancia si gana</label>
-    <div class="metric-val pos" id="mRecover">—</div>
-  </div>
-</div>
-
-<div class="progress-label">
-  <span>Secuencia</span>
-  <span class="steps-txt" id="progressTxt">0 / 7</span>
-</div>
-<div class="progress-track">
-  <div class="progress-fill" id="progressFill" style="width:0%"></div>
-</div>
-
 <div id="actionBar" class="action-bar">
-<button class="btn-win-lg" id="btnWin" onclick="">✓ Gana</button>
-  <button class="btn-loss-lg" id="btnLoss" onclick="">✗ Pierde</button>
+  <button class="btn-win-lg" id="btnWin" onclick="">
+    <span class="btn-metric-val" id="mRecover">—</span>
+    <span class="btn-metric-action">✓ Gana</span>
+  </button>
+  <button class="btn-loss-lg" id="btnLoss" onclick="">
+    <span class="btn-metric-val" id="mPnl">$0.00</span>
+    <span class="btn-metric-action">✗ Pierde</span>
+  </button>
+</div>
+
+<div id="progressFrame" class="progress-frame">
+  <div class="progress-frame-header">
+    <span>Secuencia</span>
+    <span class="steps-txt" id="progressTxt">0 / 7</span>
+  </div>
+  <div class="progress-track">
+    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+  </div>
 </div>
 
 <div class="table-wrap">
@@ -1030,7 +1360,7 @@ function render() {
 
   const pnlEl = document.getElementById('mPnl');
   pnlEl.textContent = (pnl >= 0 ? '+' : '-') + fmt(pnl);
-  pnlEl.className = 'metric-val ' + (pnl > 0 ? 'pos' : pnl < 0 ? 'neg' : '');
+  pnlEl.className = 'btn-metric-val';
 
 
   if (currentStep < TOTAL_STEPS) {
@@ -1053,6 +1383,15 @@ function render() {
   document.getElementById('progressFill').style.width = Math.max(0, pct) + '%';
   document.getElementById('progressFill').className = 'progress-fill' + (bankroll < startBankroll ? ' danger' : '');
   document.getElementById('progressTxt').textContent = Math.max(0, doneSteps) + ' / ' + totalSteps;
+
+  // Progress frame background fill
+  const isDanger = bankroll < startBankroll;
+  const fillColor = isDanger ? 'var(--red-bg)' : 'var(--green-bg)';
+  const fillPct = Math.max(0, pct);
+  document.getElementById('progressFrame').style.background =
+    `linear-gradient(to right, ${fillColor} ${fillPct}%, var(--bg2) ${fillPct}%)`;
+  document.getElementById('progressFrame').style.borderColor =
+    fillPct > 0 ? (isDanger ? 'var(--red-dim)' : 'var(--green-dim)') : 'var(--border2)';
 
   renderHistory();
 }
@@ -1196,6 +1535,14 @@ render = function() {
   saveState();
 };
 
+// ─── INFO PANEL ──────────────────────────────────────────────────────────────
+function toggleInfo() {
+  const panel = document.getElementById('infoPanel');
+  const btn = document.getElementById('infoBtn');
+  const isOpen = panel.classList.toggle('open');
+  btn.classList.toggle('active', isOpen);
+}
+
 // ─── SKIN ────────────────────────────────────────────────────────────────────
 function setSkin(btn) {
   const skin = btn.dataset.skin;
@@ -1208,7 +1555,7 @@ function setSkin(btn) {
 // ─── INIT ────────────────────────────────────────────────────────────────────
 (function init() {
   // Restore skin
-  const valid = ['ghost','light','dark','rose'];
+  const valid = ['ghost','light','dark','rose','neon','slate'];
   const savedSkin = localStorage.getItem('martingala-skin');
   if (savedSkin && valid.includes(savedSkin)) {
     document.documentElement.setAttribute('data-skin', savedSkin);
@@ -1226,6 +1573,125 @@ function setSkin(btn) {
   render();
 })();
 
+</script>
+
+<!-- ═══ PWA INSTALL BANNER ═══ -->
+<div id="pwa-banner">
+  <div class="pwa-banner-inner">
+    <div class="pwa-icon">M</div>
+    <div class="pwa-text">
+      <strong>Instalar Martingala</strong>
+      <span>Úsala como app, sin barras del navegador</span>
+    </div>
+    <div class="pwa-actions">
+      <button class="pwa-dismiss-btn" onclick="dismissPWA()">Ahora no</button>
+      <button class="pwa-install-btn" onclick="installPWA()">Instalar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── PWA: MANIFEST DINÁMICO ───────────────────────────────────────────────────
+(function injectManifest() {
+  const manifest = {
+    name: 'Martingala — Gestor de Bankroll',
+    short_name: 'Martingala',
+    start_url: window.location.href,
+    display: 'standalone',
+    background_color: '#0d0f0e',
+    theme_color: '#0d0f0e',
+    orientation: 'portrait',
+    icons: [{
+      src: "data:image/svg+xml," + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='32' fill='%230d0f0e'/><text x='96' y='140' text-anchor='middle' font-size='120' font-family='sans-serif' font-weight='900' fill='%234ade80'>M</text></svg>`),
+      sizes: '192x192',
+      type: 'image/svg+xml'
+    }]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+  const url  = URL.createObjectURL(blob);
+  const link = document.createElement('link');
+  link.rel = 'manifest'; link.href = url;
+  document.head.appendChild(link);
+})();
+
+// ─── PWA: SERVICE WORKER ─────────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    const CACHE = 'martingala-v1';
+    self.addEventListener('install', e => {
+      e.waitUntil(caches.open(CACHE).then(c => c.addAll(['/'])));
+      self.skipWaiting();
+    });
+    self.addEventListener('activate', e => {
+      e.waitUntil(clients.claim());
+    });
+    self.addEventListener('fetch', e => {
+      e.respondWith(
+        caches.match(e.request).then(r => r || fetch(e.request))
+      );
+    });
+  `;
+  const swBlob = new Blob([swCode], {type: 'application/javascript'});
+  const swUrl  = URL.createObjectURL(swBlob);
+  navigator.serviceWorker.register(swUrl).catch(() => {});
+}
+
+// ─── PWA: INSTALL PROMPT ─────────────────────────────────────────────────────
+let _deferredPrompt = null;
+const PWA_KEY = 'martingala-pwa-installed';
+
+function isPWAInstalled() {
+  // Ya instalada si corre en standalone o el usuario ya aceptó
+  if (window.matchMedia('(display-mode: standalone)').matches) return true;
+  if (window.navigator.standalone === true) return true;
+  if (localStorage.getItem(PWA_KEY) === 'yes') return true;
+  return false;
+}
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  _deferredPrompt = e;
+  if (!isPWAInstalled()) {
+    setTimeout(() => {
+      document.getElementById('pwa-banner').classList.add('show');
+    }, 2000);
+  }
+});
+
+window.addEventListener('appinstalled', () => {
+  localStorage.setItem(PWA_KEY, 'yes');
+  hidePWABanner();
+});
+
+function installPWA() {
+  if (!_deferredPrompt) return;
+  _deferredPrompt.prompt();
+  _deferredPrompt.userChoice.then(result => {
+    if (result.outcome === 'accepted') {
+      localStorage.setItem(PWA_KEY, 'yes');
+    }
+    hidePWABanner();
+    _deferredPrompt = null;
+  });
+}
+
+function dismissPWA() {
+  // Guardar que no quiere verlo por 7 días
+  localStorage.setItem('martingala-pwa-dismissed', Date.now());
+  hidePWABanner();
+}
+
+function hidePWABanner() {
+  document.getElementById('pwa-banner').classList.remove('show');
+}
+
+// Si fue descartado hace menos de 7 días, no mostrar
+(function checkDismissed() {
+  const dismissed = parseInt(localStorage.getItem('martingala-pwa-dismissed') || '0');
+  if (dismissed && Date.now() - dismissed < 7 * 24 * 60 * 60 * 1000) {
+    window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); });
+  }
+})();
 </script>
 </body>
 </html>
